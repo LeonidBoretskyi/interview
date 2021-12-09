@@ -1,0 +1,25 @@
+{% form_theme form 'bootstrap_4_layout.html.twig' %}
+
+{{ form_start(form) }}
+    {{ form_row(form.questionText) }}
+    {{ form_row(form.gravity) }}
+
+    <ul id="answer-fields-list" class="list-group"
+        data-prototype="{{ form_widget(form.answers.vars.prototype)|e }}"
+        data-widget-tags="{{ '<li class="list-group-item"></li>'|e }}"
+        data-widget-counter="{{ form.children|length }}">
+
+    {% for answer in form.answers %}
+        <li class="list-group-item">
+            {{ form_errors(answer) }}
+            {{ form_row(answer) }}
+        </li>
+    {% endfor %}
+    </ul>
+
+    <button type="button"
+            class="add-another-collection-widget btn btn-info"
+            data-list-selector="#answer-fields-list">Add answer</button>
+
+    <button class="btn btn-primary">{{ button_label|default('Save') }}</button>
+{{ form_end(form) }}

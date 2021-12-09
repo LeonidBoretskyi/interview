@@ -1,0 +1,87 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <div class="container body-container">
+        <div class="row">
+            <div class="col-md-9">
+
+                {% for question in questions %}
+                    {% set id = false %}
+                    {% for userAnswer in userAnswers %}
+                        {% if userAnswer.question == question %}
+                            {% set id = userAnswer.answer.id %}
+                        {% endif %}
+                    {% endfor %}
+
+                <form action="/" id="{{ question.id }}">
+                    <div class="just-padding">
+                        <div class="list-group list-group-root">
+                            <span class="list-group-item">
+                                {{ question.questionText }}
+                            </span>
+                            <div class="list-group">
+                                    {% for answer in question.answers %}
+                                        <div class="list-group-item">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" name="{{ question.id }}"
+                                                       id="{{ answer.id }}" value="{{ answer.id }}"
+                                                {% if id %}disabled{% endif %} {% if id == answer.id %}checked{% endif %}>
+                                                <label class="form-check-label" for="{{ answer.id }}">
+                                                    {{ answer.answerText }}
+                                                </label>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                {% if not id %}
+                                    <button type="submit" class="btn btn-dark">Make choice</button>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </form>
+                {% else %}
+                    No records found, pleas add new questions through admin panel
+                {% endfor %}
+            </div>
+            <div class="col-md-3">sidebar</div>
+        </div>
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="navigation">
+                {{ knp_pagination_render(questions) }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        $('form').submit(function (e) {
+            e.preventDefault();
+            let $form = $(this);
+            let formId = $form.attr('id');
+            let formValue = $('input:checked', '#'+formId).val();
+            let url = '{{ path('api_set_answer', {'question':'questionId', 'answer':'answerId'}) }}';
+            url = url.replace("questionId", formId);
+            url = url.replace("answerId", formValue);
+            let data = {
+                'questionId' : formId,
+                'answerId': formValue
+            };
+
+            $.ajax({
+                type: "POST",
+                url: url,
+                data: data
+            }).done(function (data) {
+                if(data.success === "true"){
+                    $form.find('button').remove();
+                    $form.find('input:radio').prop('disabled', true);
+                }
+            });
+        });
+    </script>
+{% endblock %}
